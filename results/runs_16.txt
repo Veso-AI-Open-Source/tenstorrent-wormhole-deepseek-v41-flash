@@ -1,0 +1,16 @@
+run 1
+[bench] first {"prefill_s": 2.394, "ms_per_tok_median": 288.45, "ms_per_tok_mean": 294.86, "ms_per_tok_max": 350.66, "steps_over_1s": 0, "tok_s_median": 3.47, "tok_s_mean": 3.39, "tokens_ok": 1}
+[bench] repeat {"prefill_s": 0.346, "ms_per_tok_median": 172.91, "ms_per_tok_mean": 168.79, "ms_per_tok_max": 174.2, "steps_over_1s": 0, "tok_s_median": 5.78, "tok_s_mean": 5.92, "tokens_ok": 1}
+[bench] repeat2 {"prefill_s": 0.319, "ms_per_tok_median": 161.98, "ms_per_tok_mean": 162.12, "ms_per_tok_max": 163.16, "steps_over_1s": 0, "tok_s_median": 6.17, "tok_s_mean": 6.17, "tokens_ok": 1}
+run 2
+[bench] first {"prefill_s": 2.366, "ms_per_tok_median": 293.65, "ms_per_tok_mean": 298.57, "ms_per_tok_max": 355.74, "steps_over_1s": 0, "tok_s_median": 3.41, "tok_s_mean": 3.35, "tokens_ok": 1}
+[bench] repeat {"prefill_s": 0.348, "ms_per_tok_median": 173.27, "ms_per_tok_mean": 171.28, "ms_per_tok_max": 175.22, "steps_over_1s": 0, "tok_s_median": 5.77, "tok_s_mean": 5.84, "tokens_ok": 1}
+[bench] repeat2 {"prefill_s": 0.343, "ms_per_tok_median": 173.73, "ms_per_tok_mean": 173.89, "ms_per_tok_max": 177.03, "steps_over_1s": 0, "tok_s_median": 5.76, "tok_s_mean": 5.75, "tokens_ok": 1}
+run 3
+[bench] first {"prefill_s": 2.362, "ms_per_tok_median": 293.42, "ms_per_tok_mean": 294.72, "ms_per_tok_max": 335.2, "steps_over_1s": 0, "tok_s_median": 3.41, "tok_s_mean": 3.39, "tokens_ok": 1}
+[bench] repeat {"prefill_s": 0.347, "ms_per_tok_median": 174.14, "ms_per_tok_mean": 174.08, "ms_per_tok_max": 175.29, "steps_over_1s": 0, "tok_s_median": 5.74, "tok_s_mean": 5.74, "tokens_ok": 1}
+[bench] repeat2 {"prefill_s": 0.344, "ms_per_tok_median": 173.77, "ms_per_tok_mean": 174.11, "ms_per_tok_max": 176.41, "steps_over_1s": 0, "tok_s_median": 5.75, "tok_s_mean": 5.74, "tokens_ok": 1}
+run 4
+[bench] first {"prefill_s": 2.406, "ms_per_tok_median": 296.75, "ms_per_tok_mean": 301.05, "ms_per_tok_max": 353.79, "steps_over_1s": 0, "tok_s_median": 3.37, "tok_s_mean": 3.32, "tokens_ok": 1}
+[bench] repeat {"prefill_s": 0.345, "ms_per_tok_median": 174.11, "ms_per_tok_mean": 174.13, "ms_per_tok_max": 175.8, "steps_over_1s": 0, "tok_s_median": 5.74, "tok_s_mean": 5.74, "tokens_ok": 1}
+[bench] repeat2 {"prefill_s": 0.342, "ms_per_tok_median": 162.67, "ms_per_tok_mean": 167.52, "ms_per_tok_max": 174.72, "steps_over_1s": 0, "tok_s_median": 6.15, "tok_s_mean": 5.97, "tokens_ok": 1}

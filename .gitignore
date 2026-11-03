@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+._*
+.DS_Store
+*.so
+generated/
+dsv41/weights/
+dsv41/dumps/eval/

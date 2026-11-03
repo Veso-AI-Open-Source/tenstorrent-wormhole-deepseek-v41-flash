@@ -1,0 +1,74 @@
+At the deployment level, we adopt Encoder–Prefill–Decode (EPD) disaggregation, enabling
+vision encoding, prefill, and decoding to scale independently and overlap in execution.
+
+3.2.1. Persistent KV Cache Management
+
+Under identical workloads, V4.1 reduces the persistent KV cache footprint to 1/8 of that of V4.
+Two multiplicative factors account for this reduction: the persistent KV cache no longer stores
+SWA KV, which almost halves its size, and the global KV retained in it is further compressed to
+1/4 of V4’s footprint through architectural and precision optimizations.
+In the V4 deployment, SWA KV accounts for nearly half of the persistent KV cache capacity.
+Within this cache, global KV and SWA KV are managed independently, governed by an LRU
+eviction policy. Global KV is stored in its entirety, and upon a hit, the complete prefix is reused.
+In contrast, SWA KV is cached at two specific points—the end of the prompt and the end of
+the output—to facilitate regeneration and multi-turn sessions; a hit allows computation to
+resume from that cached position. To maintain a high hit rate, we configured a sufficiently
+large persistent KV cache on SSD such that, under typical workloads, both types of KV remain
+resident for over 72 hours. Despite retaining only 𝑛win KV entries at designated positions, the
+uncompressed SWA KV cache still incurs a substantial storage overhead, especially in multi-turn
+conversations with short turns.
+Persistently storing SWA KV is both costly and ineffective, because its access pattern does
+not match the persistent KV cache’s long retention policy. Unlike global KV, which exhibits
+long-tail reuse, SWA KV is reused only within a narrow, minute-scale window inside an active
+session and becomes dead once the session ends or the next turn begins. The V4 technical
+report proposed Zero SWA Caching, which avoids the storage overhead by recomputing missing
+SWA KV. Exact recovery, however, requires a full forward pass over 𝐿 × 𝑛win tokens, whose cost
+proved prohibitive in production deployments.
+V4.1 therefore revises persistent KV cache management as follows:
+
+1. SWA KV is no longer cached in the persistent KV cache and instead stored in a distributed
+memory pool provisioned from 10% of the host DRAM on each machine. Although this
+pool is far smaller in aggregate capacity, its short TTL (only minutes) allows expired
+entries to be recycled immediately for new sessions; under real-world workloads, this
+
+```python
+def apply_rotary_emb(x: torch.Tensor, freqs_cis: torch.Tensor, inverse: bool = False) -> torch.Tensor:
+    """Rotate `x` in place, taking adjacent element pairs as complex numbers. Accepts [b, s, d] and
+    [b, s, h, d]; `inverse` conjugates the rotation, which is how the attention output gets the
+    query's rotation removed again so the cache can stay in one shared rotated form."""
+    y = x
+    x = torch.view_as_complex(x.float().unflatten(-1, (-1, 2)))
+    if inverse:
+        freqs_cis = freqs_cis.conj()
+    if x.ndim == 3:
+        freqs_cis = freqs_cis.view(1, x.size(1), x.size(-1))
+    else:
+        freqs_cis = freqs_cis.view(1, x.size(1), 1, x.size(-1))
+    x = torch.view_as_real(x * freqs_cis).flatten(-2)
+    y.copy_(x)
+    return y
+
+
+@lru_cache(1)
+def get_window_topk_idxs(window_size: int, bsz: int, seqlen: int, start_pos: int):
+    """Which sliding-window cache slots each query attends to; -1 marks a slot holding nothing.
+
+    The cache is a ring of `window_size` slots. Prefill needs one row per query, each seeing its own
+    causal window. A decode step has a single query that sees the whole ring, listed oldest first.
+    Order within a row does not matter to `sparse_attn`, which handles every slot independently.
+    """
+    if start_pos == 0:
+        end = torch.arange(seqlen).unsqueeze(1)
+        idxs = (end - window_size + 1).clamp(0) + torch.arange(min(seqlen, window_size))
+        idxs = torch.where(idxs > end, -1, idxs)  # before the sequence started
+    else:
+        oldest = start_pos % window_size + 1
+        idxs = torch.cat([torch.arange(oldest, window_size), torch.arange(oldest)])
+        idxs = torch.where(idxs > start_pos, -1, idxs)  # ring still filling
+    # sparse_attn needs real [b, m, topk] int32 memory, hence the materializing expand
+    return idxs.int().unsqueeze(0).expand(bsz, -1, -1).contiguous()
+
+
+```
+
+Q: A train leaves Lyon at 09:15 travelling at 120 km/h. A second train leaves the same station at 09:45 at 150 km/h on a parallel track. At what time does the second train catch the first, and how far from Lyon are they? A: The first train has a 30 minute head start, which is 60 km. The second train closes the gap at 30 km/h, so it needs 2 hours. They meet at 11:45, 300 km from Lyon.

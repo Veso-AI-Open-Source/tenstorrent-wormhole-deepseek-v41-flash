@@ -1,0 +1,13 @@
+{
+ "matmul wq_a 5120->1280": 131.3,
+ "matmul wkv 5120->512": 125.1,
+ "matmul wq_b 1280->4096": 87.2,
+ "matmul wo_b 1024->5120": 87.1,
+ "matmul sh_w2 288->5120": 40.3,
+ "typecast": 21.5,
+ "add": 19.6,
+ "rms_norm 5120": 174.3,
+ "all_gather + sum": 269.6,
+ "copy 5120": 15.1,
+ "copy 1 tile": 13.3
+}
